@@ -8,6 +8,7 @@
  *
  *   npm run lab:naive        (writes docs/naive-stampede.md)
  */
+import '../src/env';
 import { writeFile } from 'node:fs/promises';
 import pg from 'pg';
 import { config } from '../src/config';
@@ -16,7 +17,7 @@ import { migrate } from '../src/db/migrate';
 import { startReconciliation } from '../src/recon/reconcile';
 import { makeApi } from '../test/helpers/api';
 
-const ADMIN = process.env.LAB_ADMIN_URL ?? 'postgres://postgres@localhost:5432/postgres';
+const ADMIN = process.env.LAB_ADMIN_URL ?? process.env.TEST_ADMIN_URL ?? 'postgres://postgres@localhost:5432/postgres';
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const rs = (paise: number) => `Rs ${(paise / 100).toLocaleString('en-IN')}`;
 

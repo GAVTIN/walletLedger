@@ -14,7 +14,8 @@
     "lab:isolation": "tsx scripts/isolation-lab.ts",
     "lab:naive": "tsx scripts/naive-stampede.ts",
     "lab:explain": "tsx scripts/explain.ts",
-    "lab:bench": "tsx scripts/bench-rules.ts"
+    "lab:bench": "tsx scripts/bench-rules.ts",
+    "demo": "tsx scripts/demo.ts"
   },
   "dependencies": {
     "fastify": "^5.2.0",

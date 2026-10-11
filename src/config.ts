@@ -1,3 +1,4 @@
+import './env';
 export const config = {
   databaseUrl: process.env.DATABASE_URL ?? 'postgres://postgres@localhost:5432/wallet',
   port: Number(process.env.PORT ?? 3000),

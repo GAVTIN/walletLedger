@@ -8,6 +8,7 @@
  * generator as the tests (src/seed/generate.ts); every row still passes the schema's
  * constraints and triggers.
  */
+import '../src/env';
 import { createPool } from '../src/db';
 import { migrate } from '../src/db/migrate';
 import { seedData } from '../src/seed/generate';

@@ -7,13 +7,14 @@
  * measured end to end through the API handler (idempotency + transaction + locks + rules),
  * once with every rule disabled and once with all four enabled.
  */
+import '../src/env';
 import { writeFile } from 'node:fs/promises';
 import pg from 'pg';
 import { config } from '../src/config';
 import { createPool } from '../src/db';
 import { makeApi } from '../test/helpers/api';
 
-const ADMIN = process.env.LAB_ADMIN_URL ?? 'postgres://postgres@localhost:5432/postgres';
+const ADMIN = process.env.LAB_ADMIN_URL ?? process.env.TEST_ADMIN_URL ?? 'postgres://postgres@localhost:5432/postgres';
 const SRC_DB = process.env.SEEDED_DB ?? 'wallet';
 const CLONE = 'wallet_rules_bench';
 const pct = (a: number[], p: number) => [...a].sort((x, y) => x - y)[Math.min(a.length - 1, Math.floor((p / 100) * a.length))];

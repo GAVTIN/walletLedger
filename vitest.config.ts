@@ -1,5 +1,12 @@
 import { defineConfig } from 'vitest/config';
 
+// let a .env file provide TEST_ADMIN_URL (real environment variables still win)
+try {
+  process.loadEnvFile('.env');
+} catch {
+  /* no .env: fine */
+}
+
 export default defineConfig({
   test: {
     include: ['test/**/*.test.ts'],

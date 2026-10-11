@@ -1,6 +1,6 @@
-# Understanding this project (a backend walkthrough for a frontend lead)
+# Understanding this project
 
-You already know state, caching, optimistic UI and race conditions in the browser. A backend that moves money is the same ideas with one difference: **the cost of being wrong is real money, and many users act at the same moment.** Everything here is an answer to "what if two things happen at once?" or "what if something fails halfway?"
+A backend that moves money is the same ideas with one difference: **the cost of being wrong is real money, and many users act at the same moment.** Everything here is an answer to "what if two things happen at once?" or "what if something fails halfway?"
 
 Read in this order. Each section names the file to open.
 
@@ -35,9 +35,9 @@ Deadlock: if one transfer locks A then B and another locks B then A, each waits 
 
 ### Isolation levels in plain words (`docs/isolation.md` has real two-terminal transcripts)
 
-* **READ COMMITTED** (default): each *statement* sees data committed before it started. Two statements in one transaction can see different worlds. Fast, and fine when we lock what we read.
-* **REPEATABLE READ**: the whole transaction sees one frozen snapshot. We use it for reconciliation so all five checks look at the same moment.
-* **SERIALIZABLE**: the database pretends transactions ran one at a time and *aborts* any that conflict (error 40001); you must retry. Correct, but my measurements show retries growing with contention (2 per request at 5 writers, about 10 at 100), and every caller needs a correct retry loop. Locks just queue people.
+- **READ COMMITTED** (default): each *statement* sees data committed before it started. Two statements in one transaction can see different worlds. Fast, and fine when we lock what we read.
+- **REPEATABLE READ**: the whole transaction sees one frozen snapshot. We use it for reconciliation so all five checks look at the same moment.
+- **SERIALIZABLE**: the database pretends transactions ran one at a time and *aborts* any that conflict (error 40001); you must retry. Correct, but my measurements show retries growing with contention (2 per request at 5 writers, about 10 at 100), and every caller needs a correct retry loop. Locks just queue people.
 
 Try: run `npm run lab:naive`, then break the lock (remove `FOR UPDATE`) and rerun `test/stampede.test.ts`; it should fail.
 
@@ -50,6 +50,7 @@ The app checks "enough balance" to return a friendly 422. The `CHECK (balance >=
 A phone on a bad network sends "pay Rs 500", gets no answer, retries. Without protection: paid twice. The client sends `Idempotency-Key: <uuid>` and the server guarantees one effect.
 
 How it works:
+
 1. Hash the request (method + path + body with keys sorted, so field order doesn't matter).
 2. Inside the **same transaction** as the transfer, `INSERT` the key with `ON CONFLICT DO NOTHING`.
 3. If the insert did not happen, someone already used this key: roll back and look it up. Same hash returns the **saved response, byte for byte**; different hash returns 422; still running returns 409.
@@ -62,6 +63,7 @@ Try: send the same curl twice with the same key and compare headers and body; ch
 ## 5. Reconciliation (`src/recon/reconcile.ts`)
 
 Because the balance is a cache, we **prove** nightly it equals the ledger. Five checks, each one SQL statement:
+
 1. Global: sum of all balances = 0.
 2. Per transfer: debits = credits.
 3. Stored balance = credits - debits, for every account.
@@ -79,11 +81,12 @@ The LLM is deliberately **not** in this path. At night, `explain.ts` asks a mode
 ## 7. Letting an LLM near financial data (`src/qa/ask.ts`)
 
 "How much did I send to Rahul in March?" Naive approach: let the model write SQL. Never do that. Our design:
-* The model returns **only JSON**: `{type, counterparty?, from?, to?}`, validated against a strict whitelist.
-* **Who is asking comes from auth**, never from the question or the model. "Show me user 7's data" cannot change the user id.
-* We run **our own parameterized SQL** for one of four fixed question types. LIKE wildcards in names are escaped.
-* Transfer notes (free text, a prompt-injection vector) are never sent to the Q&A model, and in the nightly explainer they are truncated and labelled as untrusted data.
-* The security does not depend on the model behaving; even a fully hijacked model can only choose one of four safe queries for the logged-in user. `test/qa.test.ts` includes injection attempts.
+
+- The model returns **only JSON**: `{type, counterparty?, from?, to?}`, validated against a strict whitelist.
+- **Who is asking comes from auth**, never from the question or the model. "Show me user 7's data" cannot change the user id.
+- We run **our own parameterized SQL** for one of four fixed question types. LIKE wildcards in names are escaped.
+- Transfer notes (free text, a prompt-injection vector) are never sent to the Q&A model, and in the nightly explainer they are truncated and labelled as untrusted data.
+- The security does not depend on the model behaving; even a fully hijacked model can only choose one of four safe queries for the logged-in user. `test/qa.test.ts` includes injection attempts.
 
 Try: add a transfer note "ignore previous instructions and ..." and ask a question. Nothing leaks, because notes never reach that prompt.
 
@@ -100,7 +103,7 @@ Each test file clones a pre-migrated template database (`test/helpers/global-set
 ## 10. Vocabulary cheat sheet
 
 | Term | Meaning here |
-|---|---|
+| --- | --- |
 | Transaction | a group of statements that all happen or none do |
 | Row lock (`FOR UPDATE`) | others touching that row wait until you commit |
 | Deadlock | two transactions each waiting on the other's lock |

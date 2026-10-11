@@ -10,12 +10,13 @@
  * To learn from it, do it by hand too: open two `psql` terminals and paste the lines
  * marked `A>` into one and `B>` into the other, in the order shown.
  */
+import '../src/env';
 import { writeFile } from 'node:fs/promises';
 import pg from 'pg';
 import { createPool } from '../src/db';
 import { migrate } from '../src/db/migrate';
 
-const ADMIN = process.env.LAB_ADMIN_URL ?? 'postgres://postgres@localhost:5432/postgres';
+const ADMIN = process.env.LAB_ADMIN_URL ?? process.env.TEST_ADMIN_URL ?? 'postgres://postgres@localhost:5432/postgres';
 const LAB_DB = 'wallet_lab';
 const url = ADMIN.replace(/\/[^/]*$/, `/${LAB_DB}`);
 

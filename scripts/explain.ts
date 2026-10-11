@@ -8,6 +8,7 @@
  * Sections: (A) the 5 reconciliation checks, (B) statement pagination OFFSET vs keyset,
  * (C) the fraud-rule queries, (D) what an index costs on every write.
  */
+import '../src/env';
 import { writeFile } from 'node:fs/promises';
 import type pg from 'pg';
 import { createPool } from '../src/db';
@@ -15,7 +16,8 @@ import {
   SQL_GLOBAL, SQL_NO_ENTRIES, SQL_ORPHAN_ENTRIES, SQL_OVERDRAFT, SQL_STORED, SQL_TRANSFER, SQL_UNEXPECTED_ENTRIES,
 } from '../src/recon/reconcile';
 
-const BENCH_URL = process.env.BENCH_DATABASE_URL ?? 'postgres://postgres@localhost:5432/wallet_bench';
+const BENCH_URL = process.env.BENCH_DATABASE_URL ??
+  (process.env.TEST_ADMIN_URL ?? 'postgres://postgres@localhost:5432/postgres').replace(/\/[^/?]*(\?.*)?$/, '/wallet_bench$1');
 const pool = createPool(BENCH_URL, 4);
 
 let md = '';
